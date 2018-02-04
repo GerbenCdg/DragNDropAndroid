@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.gmail.gerbencdg.dragndrop.MainActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:id="@+id/main_scrollview"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/main_rv"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:id="@+id/ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/cardview_light_background"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingBottom="16dp"
+            android:paddingTop="16dp">
+
+            <include
+                android:id="@+id/bv1"
+                layout="@layout/blockview" />
+
+            <include
+                android:id="@+id/bv2"
+                layout="@layout/blockview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/main_rv"
+        android:layout_width="match_parent"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        android:layout_height="120dp"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal" />
+
+</RelativeLayout>
