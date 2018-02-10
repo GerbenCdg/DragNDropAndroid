@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         }
     };
 
-
     private int count;
     private float mFirstX;
     private float mFirstY;
@@ -118,7 +117,6 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         }
         // else, execute code below
 
-
         saveViewPosition(view);
 
         // Create a new ClipData.Item from the ImageView object's tag
@@ -132,10 +130,8 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         ClipData data;
         data = new ClipData("dragged", mimeTypes, item);
 
-        // Instanciates the drag shadow builder.
         View.DragShadowBuilder mShadowBuilder = new View.DragShadowBuilder(view);
 
-        // Starts the drag
         view.startDrag(data  //data to be dragged
                 , mShadowBuilder //drag shadow
                 , view  //local data about the drag and drop operation
@@ -161,7 +157,13 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
         if (hoveredView instanceof BlockView) {
             if (((BlockView) hoveredView).isContainer()){
-                hoveredContainer = ((ViewGroup) hoveredView);
+
+                if (hoveredView instanceof ContainerBlockView) {
+                    hoveredContainer = (LinearLayout)
+                            ((ContainerBlockView) hoveredView).getChildAt(0);
+                } else {
+                    hoveredContainer = ((ViewGroup) hoveredView);
+                }
             }
         }
 
@@ -194,19 +196,6 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
             case DragEvent.ACTION_DRAG_LOCATION:
 
-//                Log("Drag Y: " + e.getY());
-                //  Called each time the dragged changes position
-
-                //  if (hoveredContainer.getChildCount() == 0) return false;
-
-                //  View childTop = hoveredContainer.getChildAt(0);
-                //  View childBottom = hoveredContainer.getChildAt(hoveredContainer.getChildCount() - 1);
-
-
-                /*   if ((e.GetY() >= childTop.GetY() - childTop.Height * 2) &&
-                        (e.GetY() <= childBottom.GetY() + childBottom.Height * 2))  */
-
-//                Log("mScrollView.getScrollY : " + mScrollView.getScrollY());
                 if (e.getY() < mScrollView.getScrollY() + 100) {
                     smoothScrolling = true;
                     isScrollingUp = false;
