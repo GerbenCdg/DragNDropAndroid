@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/DragNDrop.iml" filepath="$PROJECT_DIR$/DragNDrop.iml" />
       <module fileurl="file://C:\Android\DragNDropAndroid\DragNDrop.iml" filepath="C:\Android\DragNDropAndroid\DragNDrop.iml" />
-      <module fileurl="file://$PROJECT_DIR$/DragNDropAndroid.iml" filepath="$PROJECT_DIR$/DragNDropAndroid.iml" />
+      <module fileurl="file://F:\AndroidStudioProjects\DragNDrop\DragNDropAndroid.iml" filepath="F:\AndroidStudioProjects\DragNDrop\DragNDropAndroid.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://C:\Android\DragNDropAndroid\app\app.iml" filepath="C:\Android\DragNDropAndroid\app\app.iml" />
     </modules>

@@ -1,7 +1,8 @@
 package com.gmail.gerbencdg.dragndrop.blockviews;
 
 import android.content.Context;
-import android.util.AttributeSet;
+import android.support.annotation.LayoutRes;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -10,20 +11,30 @@ import android.widget.LinearLayout;
  * Created by Gerben on 04/02/2018.
  */
 
-public class ContainerBlockView extends BlockView {
+public abstract class ContainerBlockView extends BlockView {
 
-    private LinearLayout mLL;
+    protected LinearLayout mLL;
 
-    public ContainerBlockView(Context context) {
+    protected ContainerBlockView(Context context) {
         super(context);
         setOnDragListener((View.OnDragListener) context);
         initializeLinearLayout();
     }
 
-    public ContainerBlockView(Context context, AttributeSet attrs) {
+  /*  private ContainerBlockView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setOnDragListener((View.OnDragListener) context);
         initializeLinearLayout();
+    }
+*/
+
+    public ContainerBlockView(Context context, @LayoutRes int layoutRes) {
+        this(context);
+        LayoutInflater.from(context).inflate(layoutRes, mLL);
+    }
+
+    protected void setHeader(ConditionContainer cc) {
+        mLL.addView(cc, 0);
     }
 
     @Override
@@ -37,8 +48,6 @@ public class ContainerBlockView extends BlockView {
                 (LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         mLL = new ResizingLinearLayout(getContext());
         addView(mLL);
-
-        mLL.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_bright));
     }
 
     private void setMargin(View child) {
@@ -67,6 +76,7 @@ public class ContainerBlockView extends BlockView {
         @Override
         public void addView(View child, int index) {
             setMargin(child);
+            if (index == 0) index = 1; // avoids setting the child above the header
             super.addView(child, index);
             increaseViewSize(child);
         }
@@ -80,9 +90,9 @@ public class ContainerBlockView extends BlockView {
         private void increaseViewSize(View child) {
 
             ViewGroup.LayoutParams params = getLayoutParams();
-
-            params.height = LayoutParams.WRAP_CONTENT;
-            //  params.height += child.getHeight();
+            if (getChildCount() > 1) {
+                params.height = LayoutParams.WRAP_CONTENT;
+            }
 
             setLayoutParams(params);
 
@@ -93,9 +103,8 @@ public class ContainerBlockView extends BlockView {
         private void decreaseViewSize(View removedChild) {
             ViewGroup.LayoutParams params = getLayoutParams();
 
-            if (getChildCount() != 0) {
+            if (getChildCount() <= 1) {
                 params.height = getDefaultHeight();
-                //params.height -= removedChild.getHeight();
             } else {
                 params.height = LayoutParams.WRAP_CONTENT;
             }

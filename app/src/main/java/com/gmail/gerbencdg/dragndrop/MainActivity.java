@@ -21,6 +21,7 @@ import android.widget.ScrollView;
 
 import com.gmail.gerbencdg.dragndrop.blockviews.BlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.ContainerBlockView;
+import com.gmail.gerbencdg.dragndrop.blockviews.ForBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.TextBlockView;
 
 public class MainActivity extends AppCompatActivity implements View.OnDragListener, View.OnTouchListener {
@@ -63,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
             textBv.setOnDragListener(this);
         }
 
-        BlockView bv = new ContainerBlockView(this);
+        BlockView bv = new ForBlockView(this);
         ll.addView(bv, 2);
 
         mHandler = new Handler();
@@ -91,7 +92,6 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
 
-        Log("Count : " + count);
         if (view != lastTouchedView) {
             count = 0;
             lastTouchedView = view;
@@ -148,15 +148,28 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
     @Override
     public boolean onDrag(View hoveredView, DragEvent e) {
+
+        // TODO solve problem : OnDrag Exited is called when hoveredView is cardview_instruction
+        // TODO possibilities : -> Call the onDrag event on the container (not working)
+        // TODO                 ->
+
         ViewGroup hoveredContainer = null;
         View dragged = (View) e.getLocalState();
 
         if (hoveredView instanceof LinearLayout) {
-            hoveredContainer = (LinearLayout) hoveredView;
+            if (hoveredView.getParent() != null) {
+                if (hoveredView.getParent() instanceof ContainerBlockView) { // for exemple, hoveredView may be a cardview_instruction
+                   // hoveredContainer = (ContainerBlockView) hoveredView.getParent();
+                    //onDrag(hoveredContainer, e);
+                    //return true;
+                } else { // Main LL
+                    hoveredContainer = (LinearLayout) hoveredView;
+                }
+            }
         }
 
         if (hoveredView instanceof BlockView) {
-            if (((BlockView) hoveredView).isContainer()){
+            if (((BlockView) hoveredView).isContainer()) {
 
                 if (hoveredView instanceof ContainerBlockView) {
                     hoveredContainer = (LinearLayout)
@@ -234,7 +247,8 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
                 hoveredView.getBackground().clearColorFilter();
                 hoveredView.invalidate();
 
-                if (!e.getResult()) {
+                Log("new Parent : " + dragged.getParent());
+                if (!e.getResult() || dragged.getParent() == null) {
                     resetDraggedView(dragged);
                 }
                 dragged.setVisibility(View.VISIBLE);

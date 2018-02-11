@@ -5,7 +5,6 @@ import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 /**
  * Created by Gerben on 04/02/2018.
@@ -13,8 +12,8 @@ import android.widget.FrameLayout;
 
 public abstract class BlockView extends CardView {
 
-    private static final int DEFAULT_HEIGHT = 100;
-    private static final int DEFAULT_WIDTH = 150;
+    private static final int DEFAULT_HEIGHT = 120;
+    private static final int DEFAULT_WIDTH = 200;
 
     public BlockView(Context context) {
         super(context);
