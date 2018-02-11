@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.gmail.gerbencdg.dragndrop.blockviews.TextBlockView
+<com.gmail.gerbencdg.dragndrop.blockviews.RecyclerBlockView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/card_view"
     android:layout_width="160dp"
@@ -9,7 +9,7 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto">
 
     <TextView
-        android:id="@+id/info_text"
+        android:id="@+id/tv_blockname"
         android:layout_width="match_parent"
         android:textSize="16sp"
         android:padding="12dp"
@@ -17,4 +17,4 @@
         android:text="This is a blockview"
         android:layout_height="match_parent" />
 
-</com.gmail.gerbencdg.dragndrop.blockviews.TextBlockView >
+</com.gmail.gerbencdg.dragndrop.blockviews.RecyclerBlockView>

@@ -11,7 +11,16 @@ import com.gmail.gerbencdg.dragndrop.R;
 public class IfBlockView extends ContainerBlockView{
 
     public IfBlockView(Context context) {
-        super(context);
-        setHeader(new ConditionContainer(context, R.layout.tv_condition));
+        super(context, R.layout.cardview_if, new ConditionContainer(context));
+    }
+
+    @Override
+    public String getBlockName() {
+        return "If condition";
+    }
+
+    @Override
+    public BlockView clone() {
+        return new IfBlockView(getContext());
     }
 }

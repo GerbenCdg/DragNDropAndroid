@@ -7,27 +7,27 @@ import android.view.Gravity;
 import android.widget.TextView;
 
 /**
- * Created by Gerben on 12/02/2018.
+ * Created by Gerben on 04/02/2018.
  */
 
-public class TextBlockView extends SimpleBlockView {
+public class RecyclerBlockView extends SimpleBlockView {
 
     private String text;
     private TextView mTextView;
 
     private BlockView realBv;
 
-    public TextBlockView(Context context) {
+    public RecyclerBlockView(Context context) {
         super(context);
         inflateTextView();
     }
 
-    public TextBlockView(Context context, AttributeSet attrs) {
+    public RecyclerBlockView(Context context, AttributeSet attrs) {
         super(context, attrs);
         inflateTextView();
     }
 
-    public TextBlockView(Context context, String text) {
+    public RecyclerBlockView(Context context, String text) {
         super(context);
         inflateTextView();
         mTextView.setText(text);
@@ -51,11 +51,23 @@ public class TextBlockView extends SimpleBlockView {
         return text;
     }
 
+    public BlockView getRealBv() {
+        return realBv;
+    }
 
     @Override
     public BlockView clone() {
         // we ensure a new copy is made of the BlockView each time a dragNDrop is started
-        return new TextBlockView(getContext());
+        return realBv.clone();
+    }
+
+    public void setRealBv(BlockView rbv) {
+        if (realBv != null) {
+            removeView(rbv);
+        }
+        this.realBv = rbv;
+        realBv.setVisibility(GONE);
+        addView(realBv);
     }
 
     public void setText(String text) {

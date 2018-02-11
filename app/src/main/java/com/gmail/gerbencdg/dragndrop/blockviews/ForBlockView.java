@@ -11,7 +11,16 @@ import com.gmail.gerbencdg.dragndrop.R;
 public class ForBlockView extends ContainerBlockView {
 
     public ForBlockView(Context context) {
-        super(context, R.layout.cardview_for);
+        super(context, R.layout.cardview_for, new InstructionContainer(context));
     }
 
+    @Override
+    public String getBlockName() {
+        return "For loop";
+    }
+
+    @Override
+    public BlockView clone() {
+        return new ForBlockView(getContext());
+    }
 }

@@ -22,6 +22,8 @@ import android.widget.ScrollView;
 import com.gmail.gerbencdg.dragndrop.blockviews.BlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.ContainerBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.ForBlockView;
+import com.gmail.gerbencdg.dragndrop.blockviews.IfBlockView;
+import com.gmail.gerbencdg.dragndrop.blockviews.RecyclerBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.TextBlockView;
 
 public class MainActivity extends AppCompatActivity implements View.OnDragListener, View.OnTouchListener {
@@ -30,6 +32,8 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     private boolean smoothScrolling;
     private boolean isScrollingUp;
     private Handler mHandler;
+    private RecyclerView mRv;
+    private LinearLayout mLl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
         enableFullScreen();
 
-        RecyclerView mRv = findViewById(R.id.main_rv);
+        mRv = findViewById(R.id.main_rv);
         CardView mCardView1 = findViewById(R.id.bv1);
         CardView mCardView2 = findViewById(R.id.bv2);
         mScrollView = findViewById(R.id.main_scrollview);
@@ -55,17 +59,23 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
         findViewById(R.id.ll).setOnDragListener(this);
 
-        LinearLayout ll = findViewById(R.id.ll);
+        mLl = findViewById(R.id.ll);
         for (int i = 0; i < 10; i++) {
             BlockView textBv = new TextBlockView(this, "BlockView : " + i);
-            ll.addView(textBv);
+            mLl.addView(textBv);
 
             textBv.setOnTouchListener(this);
             textBv.setOnDragListener(this);
         }
 
         BlockView bv = new ForBlockView(this);
-        ll.addView(bv, 2);
+        mLl.addView(bv, 2);
+
+        BlockView ifBv = new IfBlockView(this);
+        ifBv.setOnTouchListener(this);
+
+        mLl.addView(ifBv, 2);
+        mLl.addView(new IfBlockView(this), 2);
 
         mHandler = new Handler();
         mStatusChecker.run();
@@ -91,6 +101,12 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
+
+        if (view instanceof RecyclerBlockView) {
+            // TODO get a clone
+            view = ((RecyclerBlockView) view).getRealBv();
+            /*view.setVisibility(View.VISIBLE);*/
+        }
 
         if (view != lastTouchedView) {
             count = 0;
@@ -149,17 +165,13 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     @Override
     public boolean onDrag(View hoveredView, DragEvent e) {
 
-        // TODO solve problem : OnDrag Exited is called when hoveredView is cardview_instruction
-        // TODO possibilities : -> Call the onDrag event on the container (not working)
-        // TODO                 ->
-
         ViewGroup hoveredContainer = null;
         View dragged = (View) e.getLocalState();
 
         if (hoveredView instanceof LinearLayout) {
             if (hoveredView.getParent() != null) {
                 if (hoveredView.getParent() instanceof ContainerBlockView) { // for exemple, hoveredView may be a cardview_instruction
-                   // hoveredContainer = (ContainerBlockView) hoveredView.getParent();
+                    // hoveredContainer = (ContainerBlockView) hoveredView.getParent();
                     //onDrag(hoveredContainer, e);
                     //return true;
                 } else { // Main LL
@@ -167,18 +179,13 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
                 }
             }
         }
+        Log("HoveredView : " + hoveredView);
 
-        if (hoveredView instanceof BlockView) {
-            if (((BlockView) hoveredView).isContainer()) {
-
-                if (hoveredView instanceof ContainerBlockView) {
-                    hoveredContainer = (LinearLayout)
-                            ((ContainerBlockView) hoveredView).getChildAt(0);
-                } else {
-                    hoveredContainer = ((ViewGroup) hoveredView);
-                }
-            }
+        if (hoveredView instanceof Container) {
+            // It can be an InstructionContainer or a ConditionContainer
+            hoveredContainer = ((ViewGroup) hoveredView);
         }
+
 
         switch (e.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
@@ -262,7 +269,12 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     private void saveViewPosition(View dragged) {
 
         lastCont = (ViewGroup) dragged.getParent();
-
+        // TODO check what to do here
+       /* if (lastCont == null) {
+            lastCont = mRv;
+            return; // In this case, this view is being dragged from the RecyclerView
+        }
+*/
         for (int i = 0; i < lastCont.getChildCount(); i++) {
             if (lastCont.getChildAt(i).equals(dragged)) {
                 lastPos = i;

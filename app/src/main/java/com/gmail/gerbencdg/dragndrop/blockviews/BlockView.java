@@ -10,10 +10,11 @@ import android.view.ViewGroup;
  * Created by Gerben on 04/02/2018.
  */
 
-public abstract class BlockView extends CardView {
+public abstract class BlockView extends CardView implements Cloneable {
 
     private static final int DEFAULT_HEIGHT = 120;
     private static final int DEFAULT_WIDTH = 200;
+
 
     public BlockView(Context context) {
         super(context);
@@ -37,6 +38,9 @@ public abstract class BlockView extends CardView {
     }
 
     abstract public boolean isContainer();
+    abstract public BlockView clone();
+
+    abstract public String getBlockName();
 
     protected int dpToPx(float dp) {
         return (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
@@ -49,14 +53,11 @@ public abstract class BlockView extends CardView {
         return new ViewGroup.MarginLayoutParams(getDefaultWidth(), getDefaultHeight());
     }
 
-    public ViewGroup.LayoutParams getDefaultLayoutParams() {
-        return new ViewGroup.LayoutParams(getDefaultWidth(), getDefaultHeight());
-    }
-
     public int getDefaultHeight() {
         return dpToPx(DEFAULT_HEIGHT);
     }
     public int getDefaultWidth() {
         return dpToPx(DEFAULT_WIDTH);
     }
+
 }
