@@ -22,16 +22,6 @@
             android:paddingBottom="16dp"
             android:paddingTop="16dp">
 
-            <include
-                android:id="@+id/bv1"
-                layout="@layout/recyclerblockview" />
-
-            <include
-                android:id="@+id/bv2"
-                layout="@layout/recyclerblockview"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
         </LinearLayout>
     </ScrollView>
 

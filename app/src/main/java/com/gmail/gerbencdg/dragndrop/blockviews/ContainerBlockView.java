@@ -39,6 +39,7 @@ public abstract class ContainerBlockView extends BlockView {
         setHeader(header);
     }
 
+    // TODO allow to use ConditionContainer as header
     protected ContainerBlockView(Context context, @LayoutRes int layoutRes, Container container) {
         this(context, container);
         setHeader(LayoutInflater.from(context).inflate(layoutRes, null));

@@ -23,7 +23,9 @@ import com.gmail.gerbencdg.dragndrop.blockviews.BlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.ContainerBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.ForBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.IfBlockView;
+import com.gmail.gerbencdg.dragndrop.blockviews.InstructionContainer;
 import com.gmail.gerbencdg.dragndrop.blockviews.RecyclerBlockView;
+import com.gmail.gerbencdg.dragndrop.blockviews.SimpleBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.TextBlockView;
 
 public class MainActivity extends AppCompatActivity implements View.OnDragListener, View.OnTouchListener {
@@ -43,19 +45,11 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         enableFullScreen();
 
         mRv = findViewById(R.id.main_rv);
-        CardView mCardView1 = findViewById(R.id.bv1);
-        CardView mCardView2 = findViewById(R.id.bv2);
         mScrollView = findViewById(R.id.main_scrollview);
 
         RecyclerAdapter adapter = new RecyclerAdapter(this);
         mRv.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         mRv.setAdapter(adapter);
-
-        mCardView1.setOnTouchListener(this);
-        mCardView1.setOnDragListener(this);
-
-        mCardView2.setOnTouchListener(this);
-        mCardView2.setOnDragListener(this);
 
         findViewById(R.id.ll).setOnDragListener(this);
 
@@ -104,9 +98,11 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
         if (view instanceof RecyclerBlockView) {
             // TODO get a clone
-            view = ((RecyclerBlockView) view).getRealBv();
-            /*view.setVisibility(View.VISIBLE);*/
+            view = ((RecyclerBlockView) view).clone();
+            view.setVisibility(View.VISIBLE);
         }
+        // TODO concurrentmodificationexception :
+        // déplacement de vues emboîtées les unes dans les autres
 
         if (view != lastTouchedView) {
             count = 0;
@@ -134,6 +130,10 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         // else, execute code below
 
         saveViewPosition(view);
+
+        if (view instanceof ViewGroup) {
+            ((ViewGroup) view).setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+        }
 
         // Create a new ClipData.Item from the ImageView object's tag
         ClipData.Item item = new ClipData.Item("dragged");
@@ -169,30 +169,26 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         View dragged = (View) e.getLocalState();
 
         if (hoveredView instanceof LinearLayout) {
-            if (hoveredView.getParent() != null) {
-                if (hoveredView.getParent() instanceof ContainerBlockView) { // for exemple, hoveredView may be a cardview_instruction
-                    // hoveredContainer = (ContainerBlockView) hoveredView.getParent();
-                    //onDrag(hoveredContainer, e);
-                    //return true;
-                } else { // Main LL
-                    hoveredContainer = (LinearLayout) hoveredView;
-                }
+            if (hoveredView.getParent() instanceof ScrollView) {
+                hoveredContainer = (LinearLayout) hoveredView;
             }
         }
         Log("HoveredView : " + hoveredView);
 
-        if (hoveredView instanceof Container) {
+        if (hoveredView instanceof InstructionContainer) {
             // It can be an InstructionContainer or a ConditionContainer
             hoveredContainer = ((ViewGroup) hoveredView);
         }
-
 
         switch (e.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
 
                 Log("OnDrag called");
                 // Determines if this View can accept the dragged
-                return hoveredContainer != null && e.getClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN);
+                boolean res = hoveredContainer != null && e.getClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN);
+                Log("Res : " + res);
+                Log("Dragged : " + dragged);
+                return res;
 
             case DragEvent.ACTION_DRAG_ENTERED:
 
@@ -274,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
             lastCont = mRv;
             return; // In this case, this view is being dragged from the RecyclerView
         }
-*/
+        */
         for (int i = 0; i < lastCont.getChildCount(); i++) {
             if (lastCont.getChildAt(i).equals(dragged)) {
                 lastPos = i;
@@ -287,7 +283,9 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     private void AddDraggedView(View dragged, ViewGroup container, float draggedY) {
         dragged.setVisibility(View.INVISIBLE);
 
+        Log("Dragged : " + dragged + "\nContainer : " + container);
         View child;
+
         for (int i = 0; i < container.getChildCount(); i++) {
             child = container.getChildAt(i);
 
@@ -301,6 +299,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     }
 
     private void setDraggedViewInContainer(View dragged, ViewGroup container, int position) {
+        Log("setDraggedViewInContainer");
         if (dragged.getParent() != null)
             ((ViewGroup) dragged.getParent()).removeView(dragged);
 

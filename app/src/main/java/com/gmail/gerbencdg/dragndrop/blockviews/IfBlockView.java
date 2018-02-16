@@ -11,7 +11,8 @@ import com.gmail.gerbencdg.dragndrop.R;
 public class IfBlockView extends ContainerBlockView{
 
     public IfBlockView(Context context) {
-        super(context, R.layout.cardview_if, new ConditionContainer(context));
+        // TODO allow to use ConditionContainer as header instead of R.layout.cardview_if
+        super(context, R.layout.cardview_if, new InstructionContainer(context));
     }
 
     @Override
