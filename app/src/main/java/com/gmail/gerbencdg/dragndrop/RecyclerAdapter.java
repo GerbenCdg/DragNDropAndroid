@@ -10,6 +10,7 @@ import com.gmail.gerbencdg.dragndrop.blockviews.BlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.ForBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.IfBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.RecyclerBlockView;
+import com.gmail.gerbencdg.dragndrop.blockviews.TextBlockView;
 
 /**
  * Created by Gerben on 04/02/2018.
@@ -23,19 +24,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         RecyclerBlockView recyclerBv;
         TextView tvBlockName;
 
-        public BlockView realBv;
-
         ViewHolder(RecyclerBlockView itemView) {
             super(itemView);
             recyclerBv = itemView;
             tvBlockName = recyclerBv.findViewById(R.id.tv_blockname);
-        }
-
-        void onBind(BlockView bv) {
-            realBv = bv;
-            recyclerBv.setRealBv(bv);
-            tvBlockName.setText(realBv.getBlockName());
-
         }
     }
 
@@ -44,7 +36,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
     public RecyclerAdapter(MainActivity ac) {
         ma = ac;
-        mBlockViews = new BlockView[]{new ForBlockView(ac), new IfBlockView(ac), new RecyclerBlockView(ac, "TextBlockView 1"), new RecyclerBlockView(ac, "TextBlockView 2") };
+        mBlockViews = new BlockView[]{new ForBlockView(ac), new IfBlockView(ac), new TextBlockView(ac, "TextBlockView 1"), new TextBlockView(ac, "TextBlockView 2") };
     }
 
     @Override
@@ -58,8 +50,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        holder.onBind(mBlockViews[position]);
-        Log("OnBind !" + holder.tvBlockName.getText());
+        BlockView bv = mBlockViews[position];
+        holder.recyclerBv.setRealBv(bv);
+        holder.tvBlockName.setText(bv.getBlockName());
+        Log("OnBind !" + bv.getBlockName());
 
         holder.recyclerBv.setOnTouchListener(ma);
         holder.recyclerBv.setOnDragListener(ma);

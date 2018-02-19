@@ -18,7 +18,7 @@ public class ConditionContainer extends Container {
         this(context);
         TextView tv = new TextView(context);
         tv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        tv.setText(text);
+        tv.setmText(text);
         addView(tv);
     }*/
 }

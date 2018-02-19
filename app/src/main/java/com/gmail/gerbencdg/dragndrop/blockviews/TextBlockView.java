@@ -12,10 +12,7 @@ import android.widget.TextView;
 
 public class TextBlockView extends SimpleBlockView {
 
-    private String text;
     private TextView mTextView;
-
-    private BlockView realBv;
 
     public TextBlockView(Context context) {
         super(context);
@@ -48,24 +45,23 @@ public class TextBlockView extends SimpleBlockView {
     }
 
     public String getText() {
-        return text;
+        return mTextView.getText().toString();
     }
-
 
     @Override
     public BlockView clone() {
         // we ensure a new copy is made of the BlockView each time a dragNDrop is started
-        return new TextBlockView(getContext());
+        return new TextBlockView(getContext(), getText());
     }
 
     public void setText(String text) {
-        this.text = text;
+        mTextView.setText(text);
         invalidate();
         requestLayout();
     }
 
     @Override
     public String getBlockName() {
-        return "Text Blockview";
+        return getText();
     }
 }

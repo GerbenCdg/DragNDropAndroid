@@ -13,9 +13,9 @@ import android.widget.TextView;
 
 public class RecyclerBlockView extends SimpleBlockView {
 
-    private String text;
-    private TextView mTextView;
+    private BlockView cloneInstance;
 
+    private TextView mTextView;
     private BlockView realBv;
 
     public RecyclerBlockView(Context context) {
@@ -48,40 +48,33 @@ public class RecyclerBlockView extends SimpleBlockView {
         requestLayout();
     }
 
-    public String getText() {
-        return text;
-    }
-
-
-     public void setRealBv(BlockView rbv) {
+    public void setRealBv(BlockView rbv) {
         if (realBv != null) {
             removeView(rbv);
         }
         this.realBv = rbv;
         realBv.setVisibility(GONE);
-         if (realBv.getParent() != null) {
-             ((ViewGroup) realBv.getParent()).removeView(realBv);
-         }
+        if (realBv.getParent() != null) {
+            ((ViewGroup) realBv.getParent()).removeView(realBv);
+        }
         addView(realBv);
     }
 
-       public BlockView getRealBv() {
-           return realBv;
-       }
+    private BlockView setCloneInstance() {
+        if (cloneInstance != null) {
+            removeView(cloneInstance);
+        }
+        cloneInstance = realBv.clone();
+        //cloneInstance.setVisibility(GONE);
+        addView(cloneInstance);
+
+        return cloneInstance;
+    }
 
     @Override
     public BlockView clone() {
         // we ensure a new copy is made of the BlockView each time a dragNDrop is started
-        if (realBv == null)
-            return new TextBlockView(getContext(), "heyyy");
-        //return realBv;
-        return realBv.clone();
-    }
-
-    public void setText(String text) {
-        this.text = text;
-        invalidate();
-        requestLayout();
+        return setCloneInstance();
     }
 
     @Override

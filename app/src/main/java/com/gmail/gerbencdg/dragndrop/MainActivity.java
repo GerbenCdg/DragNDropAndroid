@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     private float mFirstX;
     private float mFirstY;
     private View lastTouchedView;
+    private BlockView lastClonedRBV; // lastClonedRecyclerBlockView
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -101,12 +102,14 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         if (view instanceof RecyclerBlockView) {
 
             if (count == 0) {
-                view = ((RecyclerBlockView) view).clone();
-                view.setOnTouchListener(this);
-                view.setOnDragListener(this);
+                lastClonedRBV = ((RecyclerBlockView) view).clone();
+                lastClonedRBV.setOnTouchListener(this);
+                lastClonedRBV.setOnDragListener(this);
             }
-            //mLl.addView(view);
-            //view.setVisibility(View.VISIBLE);
+            // We work with the cloned realBv from the RecyclerBlockView instead
+            view = lastClonedRBV;
+            // onTouch(lastClonedRBV, motionEvent);
+            // return true;
         }
 
         if (count < 2) {
@@ -131,26 +134,12 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         // else, execute code below
         saveViewPosition(view);
 
-        // Create a new ClipData.Item from the ImageView object's tag
-        ClipData.Item item = new ClipData.Item("dragged");
+        ClipData clipData = new ClipData("dragged",
+                new String[]{ClipDescription.MIMETYPE_TEXT_PLAIN},
+                new ClipData.Item("dragged"));
 
-        // Create a new ClipData using the tag as a label, the plain text MIME type, and
-        // the already-created item. This will create a new ClipDescription object within the
-        // ClipData, and set its MIME type entry to "text/plain"
-        String[] mimeTypes = {ClipDescription.MIMETYPE_TEXT_PLAIN};
-
-        ClipData data;
-        data = new ClipData("dragged", mimeTypes, item);
-
-        View.DragShadowBuilder mShadowBuilder = new View.DragShadowBuilder(view);
-
-        boolean startedDrag = view.startDrag(data  //data to be dragged
-                , mShadowBuilder //drag shadow
-                , view  //local data about the drag and drop operation
-                , 0
-        );
-        if (startedDrag) {
-            //Set view visibility to INVISIBLE as we are going to drag the view
+        // returns true if drag started
+        if (view.startDrag(clipData, new View.DragShadowBuilder(view), view, 0)) {
             view.setVisibility(View.INVISIBLE);
         }
 
@@ -171,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
                 hoveredContainer = (LinearLayout) hoveredView;
             }
         }
-        Log("HoveredView : " + hoveredView);
+        //Log("HoveredView : " + hoveredView);
 
         if (hoveredView instanceof InstructionContainer) {
             // It can be an InstructionContainer or a ConditionContainer
@@ -183,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
                 Log("OnDrag Started");
                 // Determines if this View can accept the dragged
-                boolean res = hoveredContainer != null && e.getClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN);
+                boolean res = hoveredContainer != null;
                 Log("Res : " + res);
                 Log("Dragged : " + dragged);
                 return res;
