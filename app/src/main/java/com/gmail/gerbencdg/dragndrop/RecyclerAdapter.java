@@ -1,6 +1,7 @@
 package com.gmail.gerbencdg.dragndrop;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -16,15 +17,25 @@ import com.gmail.gerbencdg.dragndrop.blockviews.RecyclerBlockView;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
 
-    protected class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
+        // displayed in the recyclerview
         RecyclerBlockView recyclerBv;
         TextView tvBlockName;
+
+        public BlockView realBv;
 
         ViewHolder(RecyclerBlockView itemView) {
             super(itemView);
             recyclerBv = itemView;
             tvBlockName = recyclerBv.findViewById(R.id.tv_blockname);
+        }
+
+        void onBind(BlockView bv) {
+            realBv = bv;
+            recyclerBv.setRealBv(bv);
+            tvBlockName.setText(realBv.getBlockName());
+
         }
     }
 
@@ -46,8 +57,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.tvBlockName.setText(mBlockViews[holder.getAdapterPosition()].getBlockName());
-        holder.recyclerBv.setRealBv(mBlockViews[holder.getAdapterPosition()]);
+
+        holder.onBind(mBlockViews[position]);
+        Log("OnBind !" + holder.tvBlockName.getText());
 
         holder.recyclerBv.setOnTouchListener(ma);
         holder.recyclerBv.setOnDragListener(ma);
@@ -57,4 +69,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     public int getItemCount() {
         return mBlockViews.length;
     }
+
+    private void Log(String s) {
+        Log.w("RecyclerAdapter", s);
+    }
+
 }

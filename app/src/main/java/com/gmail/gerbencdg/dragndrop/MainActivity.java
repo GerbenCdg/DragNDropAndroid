@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -20,12 +19,10 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
 import com.gmail.gerbencdg.dragndrop.blockviews.BlockView;
-import com.gmail.gerbencdg.dragndrop.blockviews.ContainerBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.ForBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.IfBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.InstructionContainer;
 import com.gmail.gerbencdg.dragndrop.blockviews.RecyclerBlockView;
-import com.gmail.gerbencdg.dragndrop.blockviews.SimpleBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.TextBlockView;
 
 public class MainActivity extends AppCompatActivity implements View.OnDragListener, View.OnTouchListener {
@@ -54,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         findViewById(R.id.ll).setOnDragListener(this);
 
         mLl = findViewById(R.id.ll);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2; i++) {
             BlockView textBv = new TextBlockView(this, "BlockView : " + i);
             mLl.addView(textBv);
 
@@ -96,18 +93,22 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
 
-        if (view instanceof RecyclerBlockView) {
-            // TODO get a clone
-            view = ((RecyclerBlockView) view).clone();
-            view.setVisibility(View.VISIBLE);
-        }
-        // TODO concurrentmodificationexception :
-        // déplacement de vues emboîtées les unes dans les autres
-
         if (view != lastTouchedView) {
             count = 0;
             lastTouchedView = view;
         }
+
+        if (view instanceof RecyclerBlockView) {
+
+            if (count == 0) {
+                view = ((RecyclerBlockView) view).clone();
+                view.setOnTouchListener(this);
+                view.setOnDragListener(this);
+            }
+            //mLl.addView(view);
+            //view.setVisibility(View.VISIBLE);
+        }
+
         if (count < 2) {
             if (count == 0) {
                 mFirstX = motionEvent.getX();
@@ -128,12 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
                 return true;
         }
         // else, execute code below
-
         saveViewPosition(view);
-
-        if (view instanceof ViewGroup) {
-            ((ViewGroup) view).setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
-        }
 
         // Create a new ClipData.Item from the ImageView object's tag
         ClipData.Item item = new ClipData.Item("dragged");
@@ -148,13 +144,15 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
         View.DragShadowBuilder mShadowBuilder = new View.DragShadowBuilder(view);
 
-        view.startDrag(data  //data to be dragged
+        boolean startedDrag = view.startDrag(data  //data to be dragged
                 , mShadowBuilder //drag shadow
                 , view  //local data about the drag and drop operation
                 , 0
         );
-        //Set view visibility to INVISIBLE as we are going to drag the view
-        view.setVisibility(View.INVISIBLE);
+        if (startedDrag) {
+            //Set view visibility to INVISIBLE as we are going to drag the view
+            view.setVisibility(View.INVISIBLE);
+        }
 
         return true;
     }
@@ -166,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     public boolean onDrag(View hoveredView, DragEvent e) {
 
         ViewGroup hoveredContainer = null;
-        View dragged = (View) e.getLocalState();
+        final View dragged = (View) e.getLocalState();
 
         if (hoveredView instanceof LinearLayout) {
             if (hoveredView.getParent() instanceof ScrollView) {
@@ -183,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         switch (e.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
 
-                Log("OnDrag called");
+                Log("OnDrag Started");
                 // Determines if this View can accept the dragged
                 boolean res = hoveredContainer != null && e.getClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN);
                 Log("Res : " + res);
@@ -192,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
             case DragEvent.ACTION_DRAG_ENTERED:
 
-                Log("OnDrag Entered");
+                // Log("OnDrag Entered");
                 // Called when dragged enters in this view
 
                 hoveredView.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
@@ -202,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
             case DragEvent.ACTION_DRAG_EXITED:
 
-                Log("OnDrag Exited");
+                // Log("OnDrag Exited");
                 hoveredView.getBackground().clearColorFilter();
                 hoveredView.invalidate();
 
@@ -212,14 +210,17 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
             case DragEvent.ACTION_DRAG_LOCATION:
 
-                if (e.getY() < mScrollView.getScrollY() + 100) {
-                    smoothScrolling = true;
-                    isScrollingUp = false;
-                } else if (e.getY() + 150 > mScrollView.getScrollY() + mScrollView.getHeight()) {
-                    smoothScrolling = true;
-                    isScrollingUp = true;
-                } else {
-                    smoothScrolling = false;
+                // check out for coordinates : view.onInterceptTouchEvent
+                if (dragged.getParent() != null && dragged.getParent().getParent() instanceof ScrollView) {
+                    if (e.getY() < mScrollView.getScrollY() + 100) {
+                        smoothScrolling = true;
+                        isScrollingUp = false;
+                    } else if (e.getY() + 150 > mScrollView.getScrollY() + mScrollView.getHeight()) {
+                        smoothScrolling = true;
+                        isScrollingUp = true;
+                    } else {
+                        smoothScrolling = false;
+                    }
                 }
 
                 AddDraggedView(dragged, hoveredContainer, e.getY());
@@ -230,8 +231,6 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
                 Log("OnDrag Drop");
                 smoothScrolling = false;
-
-                ClipData.Item item = e.getClipData().getItemAt(0);
 
                 hoveredView.getBackground().clearColorFilter();
                 hoveredView.invalidate();
@@ -250,11 +249,17 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
                 hoveredView.getBackground().clearColorFilter();
                 hoveredView.invalidate();
 
-                Log("new Parent : " + dragged.getParent());
+                Log("new Parent : " + dragged.getParent() + "\n\n");
                 if (!e.getResult() || dragged.getParent() == null) {
                     resetDraggedView(dragged);
                 }
-                dragged.setVisibility(View.VISIBLE);
+                // sov 10988671
+                dragged.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        dragged.setVisibility(View.VISIBLE);
+                    }
+                });
 
                 return true;
         }
@@ -265,12 +270,12 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     private void saveViewPosition(View dragged) {
 
         lastCont = (ViewGroup) dragged.getParent();
-        // TODO check what to do here
-       /* if (lastCont == null) {
+        // TODO check if this is good
+        if (lastCont == null) {
             lastCont = mRv;
             return; // In this case, this view is being dragged from the RecyclerView
         }
-        */
+
         for (int i = 0; i < lastCont.getChildCount(); i++) {
             if (lastCont.getChildAt(i).equals(dragged)) {
                 lastPos = i;
@@ -281,9 +286,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     }
 
     private void AddDraggedView(View dragged, ViewGroup container, float draggedY) {
-        dragged.setVisibility(View.INVISIBLE);
-
-        Log("Dragged : " + dragged + "\nContainer : " + container);
+        // Log("Dragged : " + dragged + "\nContainer : " + container);
         View child;
 
         for (int i = 0; i < container.getChildCount(); i++) {
@@ -299,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     }
 
     private void setDraggedViewInContainer(View dragged, ViewGroup container, int position) {
-        Log("setDraggedViewInContainer");
+        // Log("setDraggedViewInContainer");
         if (dragged.getParent() != null)
             ((ViewGroup) dragged.getParent()).removeView(dragged);
 
@@ -312,7 +315,6 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
             return;
 
         setDraggedViewInContainer(dragged, lastCont, lastPos);
-        dragged.setVisibility(View.VISIBLE);
     }
 
     private void Log(String s) {

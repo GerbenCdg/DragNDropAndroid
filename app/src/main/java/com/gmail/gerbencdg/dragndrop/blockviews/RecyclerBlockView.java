@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.Dimension;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 /**
@@ -51,23 +52,30 @@ public class RecyclerBlockView extends SimpleBlockView {
         return text;
     }
 
-    public BlockView getRealBv() {
-        return realBv;
-    }
 
-    @Override
-    public BlockView clone() {
-        // we ensure a new copy is made of the BlockView each time a dragNDrop is started
-        return realBv.clone();
-    }
-
-    public void setRealBv(BlockView rbv) {
+     public void setRealBv(BlockView rbv) {
         if (realBv != null) {
             removeView(rbv);
         }
         this.realBv = rbv;
         realBv.setVisibility(GONE);
+         if (realBv.getParent() != null) {
+             ((ViewGroup) realBv.getParent()).removeView(realBv);
+         }
         addView(realBv);
+    }
+
+       public BlockView getRealBv() {
+           return realBv;
+       }
+
+    @Override
+    public BlockView clone() {
+        // we ensure a new copy is made of the BlockView each time a dragNDrop is started
+        if (realBv == null)
+            return new TextBlockView(getContext(), "heyyy");
+        //return realBv;
+        return realBv.clone();
     }
 
     public void setText(String text) {
