@@ -29,6 +29,7 @@
         android:id="@+id/main_rv"
         android:layout_width="match_parent"
         android:padding="8dp"
+        android:background="@color/cardview_light_background"
         android:clipToPadding="false"
         android:layout_height="120dp"
         android:layout_alignParentBottom="true"

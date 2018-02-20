@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         mRv.setAdapter(adapter);
 
         findViewById(R.id.ll).setOnDragListener(this);
+        mRv.setOnDragListener(this);
 
         mLl = findViewById(R.id.ll);
         for (int i = 0; i < 2; i++) {
@@ -59,14 +60,16 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
             textBv.setOnDragListener(this);
         }
 
-        BlockView bv = new ForBlockView(this);
-        mLl.addView(bv, 2);
-
+        BlockView forBv = new ForBlockView(this);
         BlockView ifBv = new IfBlockView(this);
+        IfBlockView ifBv2 = new IfBlockView(this);
+        forBv.setOnTouchListener(this);
         ifBv.setOnTouchListener(this);
+        ifBv2.setOnTouchListener(this);
 
+        mLl.addView(forBv, 2);
         mLl.addView(ifBv, 2);
-        mLl.addView(new IfBlockView(this), 2);
+        mLl.addView(ifBv2, 2);
 
         mHandler = new Handler();
         mStatusChecker.run();
@@ -90,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
     private float mFirstY;
     private View lastTouchedView;
     private BlockView lastClonedRBV; // lastClonedRecyclerBlockView
+    private boolean hasCloned;
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -99,21 +103,20 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
             lastTouchedView = view;
         }
 
-        if (view instanceof RecyclerBlockView) {
-
-            if (count == 0) {
-                lastClonedRBV = ((RecyclerBlockView) view).clone();
-                lastClonedRBV.setOnTouchListener(this);
-                lastClonedRBV.setOnDragListener(this);
-            }
-            // We work with the cloned realBv from the RecyclerBlockView instead
-            view = lastClonedRBV;
-            // onTouch(lastClonedRBV, motionEvent);
-            // return true;
-        }
+//        if (view instanceof RecyclerBlockView) {
+//
+//            if (count == 0) {
+//                lastClonedRBV = ((RecyclerBlockView) view).clone();
+//                lastClonedRBV.setOnTouchListener(this);
+//                lastClonedRBV.setOnDragListener(this);
+//            }
+//            // We work with the cloned realBv from the RecyclerBlockView instead
+//            view = lastClonedRBV;
+//        }
 
         if (count < 2) {
             if (count == 0) {
+                hasCloned = false;
                 mFirstX = motionEvent.getX();
                 mFirstY = motionEvent.getY();
             }
@@ -130,7 +133,20 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
                     || view.getParent() instanceof LinearLayout && dY > dX)
                 // let me scroll !
                 return true;
+
+            if (!hasCloned && view instanceof RecyclerBlockView) { // pb : this is called multiple times (it seems not to be the problem)
+
+                lastClonedRBV = ((RecyclerBlockView) view).clone();
+                lastClonedRBV.setOnTouchListener(this);
+                lastClonedRBV.setOnDragListener(this);
+                hasCloned = true;
+            }
         }
+        if (view instanceof RecyclerBlockView) {
+            // We work with the cloned realBv from the RecyclerBlockView instead
+            view = lastClonedRBV;
+        }
+
         // else, execute code below
         saveViewPosition(view);
 
@@ -141,6 +157,11 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         // returns true if drag started
         if (view.startDrag(clipData, new View.DragShadowBuilder(view), view, 0)) {
             view.setVisibility(View.INVISIBLE);
+        } else {
+            if (lastTouchedView instanceof RecyclerBlockView) {
+                Log("RemoveCloneInstance called from onTouch");
+                ((RecyclerBlockView) lastTouchedView).removeCloneInstance();
+            }
         }
 
         return true;
@@ -154,6 +175,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
         ViewGroup hoveredContainer = null;
         final View dragged = (View) e.getLocalState();
+        boolean hoveredIsRv = hoveredView instanceof RecyclerView;
 
         if (hoveredView instanceof LinearLayout) {
             if (hoveredView.getParent() instanceof ScrollView) {
@@ -162,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         }
         //Log("HoveredView : " + hoveredView);
 
-        if (hoveredView instanceof InstructionContainer) {
+        if (hoveredView instanceof InstructionContainer || hoveredIsRv) {
             // It can be an InstructionContainer or a ConditionContainer
             hoveredContainer = ((ViewGroup) hoveredView);
         }
@@ -175,6 +197,8 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
                 boolean res = hoveredContainer != null;
                 Log("Res : " + res);
                 Log("Dragged : " + dragged);
+
+                dragged.setOnDragListener(null);
                 return res;
 
             case DragEvent.ACTION_DRAG_ENTERED:
@@ -193,11 +217,20 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
                 hoveredView.getBackground().clearColorFilter();
                 hoveredView.invalidate();
 
-                ((ViewGroup) dragged.getParent()).removeView(dragged);
+                if (!hoveredIsRv) {
+                    ((ViewGroup) dragged.getParent()).removeView(dragged);
+                }
 
                 return true;
 
             case DragEvent.ACTION_DRAG_LOCATION:
+
+                Log("Drag Location : " + hoveredView + "\tHovered is Rv : " + hoveredIsRv);
+
+                if (hoveredIsRv) {
+                    smoothScrolling = false;
+                    return true;
+                }
 
                 // check out for coordinates : view.onInterceptTouchEvent
                 if (dragged.getParent() != null && dragged.getParent().getParent() instanceof ScrollView) {
@@ -219,10 +252,14 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
             case DragEvent.ACTION_DROP:
 
                 Log("OnDrag Drop");
-                smoothScrolling = false;
+                //smoothScrolling = false;
 
                 hoveredView.getBackground().clearColorFilter();
                 hoveredView.invalidate();
+
+                if (hoveredIsRv) {
+                    return true;
+                }
 
                 if (hoveredContainer != null) {
                     AddDraggedView(dragged, hoveredContainer, e.getY());
@@ -233,15 +270,24 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
             case DragEvent.ACTION_DRAG_ENDED:
 
                 Log("OnDrag Ended. Result : " + (e.getResult() ? "SUCCESS" : "FAILURE"));
+
                 smoothScrolling = false;
 
                 hoveredView.getBackground().clearColorFilter();
                 hoveredView.invalidate();
 
+                if (lastTouchedView instanceof RecyclerBlockView) {
+                    ((RecyclerBlockView) lastTouchedView).removeCloneInstance();
+                    count = 0; // ensures we will make a new copy if this view is dragged again from the RecyclerView
+                }
+                // if dragged.getParent() == null, the hoveredview is the recyclerview
+                if (hoveredIsRv || dragged.getParent() == null) return true;
+
                 Log("new Parent : " + dragged.getParent() + "\n\n");
-                if (!e.getResult() || dragged.getParent() == null) {
+                if (!e.getResult()) {
                     resetDraggedView(dragged);
                 }
+
                 // sov 10988671
                 dragged.post(new Runnable() {
                     @Override
@@ -258,12 +304,11 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
     private void saveViewPosition(View dragged) {
 
-        lastCont = (ViewGroup) dragged.getParent();
-        // TODO check if this is good
-        if (lastCont == null) {
-            lastCont = mRv;
+        // TODO check if this handles the situation correctly
+        if (lastTouchedView instanceof RecyclerBlockView) {
             return; // In this case, this view is being dragged from the RecyclerView
         }
+        lastCont = (ViewGroup) dragged.getParent();
 
         for (int i = 0; i < lastCont.getChildCount(); i++) {
             if (lastCont.getChildAt(i).equals(dragged)) {
@@ -300,8 +345,10 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
     private void resetDraggedView(View dragged) {
 
-        if (lastCont instanceof RecyclerView)
+        Log("LastTouchedView : " + lastTouchedView);
+        if (lastTouchedView instanceof RecyclerBlockView) {
             return;
+        }
 
         setDraggedViewInContainer(dragged, lastCont, lastPos);
     }

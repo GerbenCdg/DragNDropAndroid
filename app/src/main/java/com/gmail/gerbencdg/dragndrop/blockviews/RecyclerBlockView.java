@@ -62,13 +62,19 @@ public class RecyclerBlockView extends SimpleBlockView {
 
     private BlockView setCloneInstance() {
         if (cloneInstance != null) {
-            removeView(cloneInstance);
+            removeCloneInstance(); // TODO check coherance
+            //throw new IllegalStateException("removeCloneInstance should have been called !");
         }
         cloneInstance = realBv.clone();
         //cloneInstance.setVisibility(GONE);
         addView(cloneInstance);
-
         return cloneInstance;
+    }
+
+    // To be called when DragNDrop from RecyclerView is cancelled
+    public void removeCloneInstance() {
+        removeView(cloneInstance);
+        cloneInstance = null;
     }
 
     @Override
