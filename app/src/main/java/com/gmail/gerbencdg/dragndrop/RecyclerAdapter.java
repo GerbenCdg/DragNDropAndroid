@@ -7,10 +7,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.gmail.gerbencdg.dragndrop.blockviews.BlockView;
-import com.gmail.gerbencdg.dragndrop.blockviews.ForBlockView;
-import com.gmail.gerbencdg.dragndrop.blockviews.IfBlockView;
 import com.gmail.gerbencdg.dragndrop.blockviews.RecyclerBlockView;
-import com.gmail.gerbencdg.dragndrop.blockviews.TextBlockView;
+import com.gmail.gerbencdg.dragndrop.blockviews.container.ForBlockView;
+import com.gmail.gerbencdg.dragndrop.blockviews.container.IfBlockView;
+import com.gmail.gerbencdg.dragndrop.blockviews.simple.InstructionBlockView;
+import com.gmail.gerbencdg.dragndrop.blockviews.simple.TextBlockView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Gerben on 04/02/2018.
@@ -32,11 +36,23 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     }
 
     private MainActivity ma;
-    private BlockView[] mBlockViews;
+    private List<BlockView> mBlockViews;
+    private List<BlockView> mFilteredBvs;
+    private BlockView.Categories mLastCategory;
 
-    public RecyclerAdapter(MainActivity ac) {
+    public RecyclerAdapter(MainActivity ac, BlockView.Categories selectedCat) {
+
         ma = ac;
-        mBlockViews = new BlockView[]{new ForBlockView(ac), new IfBlockView(ac), new TextBlockView(ac, "TextBlockView 1"), new TextBlockView(ac, "TextBlockView 2") };
+        mBlockViews = new ArrayList<>();
+        mBlockViews.add(new ForBlockView(ac));
+        mBlockViews.add(new IfBlockView(ac));
+        mBlockViews.add(new TextBlockView(ac, "TextBlockView 1"));
+        mBlockViews.add(new InstructionBlockView(ac, R.drawable.ic_launcher_background));
+        mBlockViews.add(new TextBlockView(ac, "TextBlockView 2"));
+
+        mFilteredBvs = new ArrayList<>();
+        mFilteredBvs.addAll(mBlockViews);
+        mLastCategory = selectedCat;
     }
 
     @Override
@@ -50,7 +66,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        BlockView bv = mBlockViews[position];
+        BlockView bv = mFilteredBvs.get(position);
         holder.recyclerBv.setRealBv(bv);
         holder.tvBlockName.setText(bv.getBlockName());
         Log("OnBind !" + bv.getBlockName());
@@ -61,11 +77,37 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        return mBlockViews.length;
+        return mFilteredBvs.size();
     }
 
     private void Log(String s) {
         Log.w("RecyclerAdapter", s);
+    }
+
+    public void setFilter(BlockView.Categories category) {
+        mFilteredBvs.clear();
+
+        if (mLastCategory.equals(category)) {
+            return;
+        }
+
+        mLastCategory = category;
+
+        if (category.equals(BlockView.Categories.ALL)) {
+            mFilteredBvs.addAll(mBlockViews);
+            notifyDataSetChanged();
+            return;
+        }
+
+        for (BlockView bv : mBlockViews) {
+            for (BlockView.Categories cat : bv.getCategories()) {
+                if (cat.equals(category)) {
+                    mFilteredBvs.add(bv);
+                    break;
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 
 }

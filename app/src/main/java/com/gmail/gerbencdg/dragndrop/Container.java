@@ -6,20 +6,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import static com.gmail.gerbencdg.dragndrop.blockviews.BlockView.DEFAULT_HEIGHT;
+import static com.gmail.gerbencdg.dragndrop.blockviews.BlockView.DEFAULT_WIDTH;
+
 /**
  * Created by Gerben on 11/02/2018.
  */
 
-public abstract class Container extends LinearLayout{
+public abstract class Container extends LinearLayout {
 
-    private static final int DEFAULT_HEIGHT = 110;
-    private static final int DEFAULT_WIDTH = 180;
 
     public Container(Context context) {
         super(context);
         setOrientation(VERTICAL);
         setLayoutParams(getDefaultLayoutParams());
-        setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+        setBackgroundColor(getResources().getColor(R.color.cardview_light_background));
+
+        int margin = dpToPx(8);
+        MarginLayoutParams params = new MarginLayoutParams(getLayoutParams());
+        params.setMargins(margin, margin, margin, margin*2);
+        setLayoutParams(params);
     }
 
     @Override
@@ -52,9 +58,8 @@ public abstract class Container extends LinearLayout{
     private void increaseViewSize(View child) {
 
         ViewGroup.LayoutParams params = getLayoutParams();
-        if (getChildCount() > 1) {
-            params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        }
+        params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        params.width = LinearLayout.LayoutParams.WRAP_CONTENT;
 
         setLayoutParams(params);
 
@@ -63,17 +68,18 @@ public abstract class Container extends LinearLayout{
     }
 
     private void decreaseViewSize(View removedChild) {
-        ViewGroup.LayoutParams params = getLayoutParams();
 
-        if (getChildCount() <= 1) {
+        if (getChildCount() < 1) {
+            ViewGroup.LayoutParams params = getLayoutParams();
+
             params.height = getDefaultHeight();
-        } else {
-            params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        }
-        setLayoutParams(params);
+            params.width = getDefaultWidth();
+            setLayoutParams(params);
 
-        invalidate();
-        requestLayout();
+            invalidate();
+            requestLayout();
+        }
+
     }
 
     protected int dpToPx(float dp) {
@@ -91,6 +97,7 @@ public abstract class Container extends LinearLayout{
     public int getDefaultHeight() {
         return dpToPx(DEFAULT_HEIGHT);
     }
+
     public int getDefaultWidth() {
         return dpToPx(DEFAULT_WIDTH);
     }

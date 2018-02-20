@@ -7,6 +7,7 @@ import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,16 +18,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.Toast;
 
 import com.gmail.gerbencdg.dragndrop.blockviews.BlockView;
-import com.gmail.gerbencdg.dragndrop.blockviews.ForBlockView;
-import com.gmail.gerbencdg.dragndrop.blockviews.IfBlockView;
-import com.gmail.gerbencdg.dragndrop.blockviews.InstructionContainer;
 import com.gmail.gerbencdg.dragndrop.blockviews.RecyclerBlockView;
-import com.gmail.gerbencdg.dragndrop.blockviews.TextBlockView;
+import com.gmail.gerbencdg.dragndrop.blockviews.container.ContainerBlockView;
+import com.gmail.gerbencdg.dragndrop.blockviews.container.InstructionContainer;
+import com.gmail.gerbencdg.dragndrop.blockviews.simple.TextBlockView;
+
+import static com.gmail.gerbencdg.dragndrop.blockviews.BlockView.Categories.ALL;
+import static com.gmail.gerbencdg.dragndrop.blockviews.BlockView.Categories.INSTRUCTIONS;
+import static com.gmail.gerbencdg.dragndrop.blockviews.BlockView.Categories.LOGIC;
 
 public class MainActivity extends AppCompatActivity implements View.OnDragListener, View.OnTouchListener {
 
+    private static final int MAX_BLOCK_DEPTH = 3;
     private ScrollView mScrollView;
     private boolean smoothScrolling;
     private boolean isScrollingUp;
@@ -44,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         mRv = findViewById(R.id.main_rv);
         mScrollView = findViewById(R.id.main_scrollview);
 
-        RecyclerAdapter adapter = new RecyclerAdapter(this);
+        final RecyclerAdapter adapter = new RecyclerAdapter(this, ALL);
         mRv.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         mRv.setAdapter(adapter);
 
@@ -60,16 +66,25 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
             textBv.setOnDragListener(this);
         }
 
-        BlockView forBv = new ForBlockView(this);
-        BlockView ifBv = new IfBlockView(this);
-        IfBlockView ifBv2 = new IfBlockView(this);
-        forBv.setOnTouchListener(this);
-        ifBv.setOnTouchListener(this);
-        ifBv2.setOnTouchListener(this);
+        TabLayout tabLayout = findViewById(R.id.main_tablayout);
 
-        mLl.addView(forBv, 2);
-        mLl.addView(ifBv, 2);
-        mLl.addView(ifBv2, 2);
+        tabLayout.addTab(tabLayout.newTab().setText("Instructions").setTag(INSTRUCTIONS));
+        tabLayout.addTab(tabLayout.newTab().setText("Logic").setTag(LOGIC));
+
+        TabLayout.Tab allTab = tabLayout.newTab().setText("All").setTag(ALL);
+        tabLayout.addTab(allTab);
+        allTab.select();
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                adapter.setFilter(((BlockView.Categories)tab.getTag()));
+            }
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
 
         mHandler = new Handler();
         mStatusChecker.run();
@@ -103,12 +118,19 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
             lastTouchedView = view;
         }
 
+        if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+            count = 0;
+            return true;
+        }
+
 //        if (view instanceof RecyclerBlockView) {
 //
-//            if (count == 0) {
+//            if (!hasCloned) {
 //                lastClonedRBV = ((RecyclerBlockView) view).clone();
+//                lastClonedRBV.setVisibility(View.INVISIBLE);
 //                lastClonedRBV.setOnTouchListener(this);
 //                lastClonedRBV.setOnDragListener(this);
+//                hasCloned = true;
 //            }
 //            // We work with the cloned realBv from the RecyclerBlockView instead
 //            view = lastClonedRBV;
@@ -123,39 +145,39 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
             count++;
 
             return true;
+        }
 
-        } else if (count == 2) {
+        float dX = Math.abs(motionEvent.getX() - mFirstX);
+        float dY = Math.abs(motionEvent.getY() - mFirstY);
 
-            float dX = Math.abs(motionEvent.getX() - mFirstX);
-            float dY = Math.abs(motionEvent.getY() - mFirstY);
+        if (lastTouchedView.getParent() instanceof RecyclerView && dX > dY
+                || lastTouchedView.getParent() instanceof LinearLayout && dY > dX)
+            // let me scroll !
+            return true;
 
-            if (view.getParent() instanceof RecyclerView && dX > dY
-                    || view.getParent() instanceof LinearLayout && dY > dX)
-                // let me scroll !
-                return true;
+        if (view instanceof RecyclerBlockView) {
 
-            if (!hasCloned && view instanceof RecyclerBlockView) { // pb : this is called multiple times (it seems not to be the problem)
-
+            if (!hasCloned) {
                 lastClonedRBV = ((RecyclerBlockView) view).clone();
                 lastClonedRBV.setOnTouchListener(this);
                 lastClonedRBV.setOnDragListener(this);
                 hasCloned = true;
             }
-        }
-        if (view instanceof RecyclerBlockView) {
             // We work with the cloned realBv from the RecyclerBlockView instead
             view = lastClonedRBV;
         }
 
-        // else, execute code below
         saveViewPosition(view);
 
         ClipData clipData = new ClipData("dragged",
                 new String[]{ClipDescription.MIMETYPE_TEXT_PLAIN},
                 new ClipData.Item("dragged"));
 
+        if (view instanceof RecyclerBlockView) {
+            view.setVisibility(View.VISIBLE);
+        }
         // returns true if drag started
-        if (view.startDrag(clipData, new View.DragShadowBuilder(view), view, 0)) {
+        if (view.startDrag(clipData, new View.DragShadowBuilder(lastTouchedView), view, 0)) {
             view.setVisibility(View.INVISIBLE);
         } else {
             if (lastTouchedView instanceof RecyclerBlockView) {
@@ -187,6 +209,14 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         if (hoveredView instanceof InstructionContainer || hoveredIsRv) {
             // It can be an InstructionContainer or a ConditionContainer
             hoveredContainer = ((ViewGroup) hoveredView);
+
+            if (hoveredView instanceof InstructionContainer) {
+                if ((((BlockView) hoveredView.getParent().getParent())).getDepth() >= MAX_BLOCK_DEPTH
+                        && dragged instanceof ContainerBlockView) {
+                    Toast.makeText(this, "Forbidden to nest more than " + MAX_BLOCK_DEPTH + " Blocks in depth.", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
         }
 
         switch (e.getAction()) {
@@ -206,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
                 // Log("OnDrag Entered");
                 // Called when dragged enters in this view
 
-                hoveredView.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+                hoveredView.getBackground().setColorFilter(Color.parseColor("#FFE082"), PorterDuff.Mode.SRC_IN);
                 hoveredView.invalidate();
 
                 return true;
@@ -225,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
 
             case DragEvent.ACTION_DRAG_LOCATION:
 
-                Log("Drag Location : " + hoveredView + "\tHovered is Rv : " + hoveredIsRv);
+                //Log("Drag Location : " + hoveredView + "\tHovered is Rv : " + hoveredIsRv);
 
                 if (hoveredIsRv) {
                     smoothScrolling = false;
@@ -280,8 +310,7 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
                     ((RecyclerBlockView) lastTouchedView).removeCloneInstance();
                     count = 0; // ensures we will make a new copy if this view is dragged again from the RecyclerView
                 }
-                // if dragged.getParent() == null, the hoveredview is the recyclerview
-                if (hoveredIsRv || dragged.getParent() == null) return true;
+                if (hoveredIsRv) return true;
 
                 Log("new Parent : " + dragged.getParent() + "\n\n");
                 if (!e.getResult()) {

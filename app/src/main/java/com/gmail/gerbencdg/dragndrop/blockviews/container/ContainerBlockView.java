@@ -1,13 +1,15 @@
-package com.gmail.gerbencdg.dragndrop.blockviews;
+package com.gmail.gerbencdg.dragndrop.blockviews.container;
 
 import android.content.Context;
 import android.support.annotation.LayoutRes;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.gmail.gerbencdg.dragndrop.Container;
+import com.gmail.gerbencdg.dragndrop.blockviews.BlockView;
 
 /**
  * Created by Gerben on 04/02/2018.
@@ -27,7 +29,11 @@ public abstract class ContainerBlockView extends BlockView {
         mLL.setLayoutParams(new FrameLayout.LayoutParams
                 (LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         addView(mLL);
-        setLayoutParams(new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+
+        ViewGroup.LayoutParams params = getLayoutParams();
+        params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+        params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        setLayoutParams(params);
 
         mContainer = container;
         mContainer.setOnDragListener((View.OnDragListener) context);
@@ -48,6 +54,11 @@ public abstract class ContainerBlockView extends BlockView {
     private void setHeader(View header) {
         mHeader = header;
         mLL.addView(header, 0);
+    }
+
+    @Override
+    public Categories[] getCategories() {
+        return new Categories[]{Categories.CONTAINERS};
     }
 
     @Override

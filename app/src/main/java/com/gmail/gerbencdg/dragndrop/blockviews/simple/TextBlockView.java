@@ -1,10 +1,12 @@
-package com.gmail.gerbencdg.dragndrop.blockviews;
+package com.gmail.gerbencdg.dragndrop.blockviews.simple;
 
 import android.content.Context;
 import android.support.annotation.Dimension;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.TextView;
+
+import com.gmail.gerbencdg.dragndrop.blockviews.BlockView;
 
 /**
  * Created by Gerben on 12/02/2018.
@@ -52,6 +54,11 @@ public class TextBlockView extends SimpleBlockView {
     public BlockView clone() {
         // we ensure a new copy is made of the BlockView each time a dragNDrop is started
         return new TextBlockView(getContext(), getText());
+    }
+
+    @Override
+    public Categories[] getCategories() {
+        return new Categories[]{Categories.INSTRUCTIONS};
     }
 
     public void setText(String text) {

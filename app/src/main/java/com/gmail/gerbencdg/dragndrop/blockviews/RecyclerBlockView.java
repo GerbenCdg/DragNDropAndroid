@@ -7,6 +7,8 @@ import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.gmail.gerbencdg.dragndrop.blockviews.simple.SimpleBlockView;
+
 /**
  * Created by Gerben on 04/02/2018.
  */
@@ -26,12 +28,6 @@ public class RecyclerBlockView extends SimpleBlockView {
     public RecyclerBlockView(Context context, AttributeSet attrs) {
         super(context, attrs);
         inflateTextView();
-    }
-
-    public RecyclerBlockView(Context context, String text) {
-        super(context);
-        inflateTextView();
-        mTextView.setText(text);
     }
 
     private void inflateTextView() {
@@ -66,7 +62,6 @@ public class RecyclerBlockView extends SimpleBlockView {
             //throw new IllegalStateException("removeCloneInstance should have been called !");
         }
         cloneInstance = realBv.clone();
-        //cloneInstance.setVisibility(GONE);
         addView(cloneInstance);
         return cloneInstance;
     }
@@ -81,6 +76,11 @@ public class RecyclerBlockView extends SimpleBlockView {
     public BlockView clone() {
         // we ensure a new copy is made of the BlockView each time a dragNDrop is started
         return setCloneInstance();
+    }
+
+    @Override
+    public Categories[] getCategories() {
+        return new Categories[]{Categories.OTHERS};
     }
 
     @Override

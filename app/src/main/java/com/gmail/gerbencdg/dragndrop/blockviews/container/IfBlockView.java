@@ -1,8 +1,9 @@
-package com.gmail.gerbencdg.dragndrop.blockviews;
+package com.gmail.gerbencdg.dragndrop.blockviews.container;
 
 import android.content.Context;
 
 import com.gmail.gerbencdg.dragndrop.R;
+import com.gmail.gerbencdg.dragndrop.blockviews.BlockView;
 
 /**
  * Created by Gerben on 11/02/2018.
@@ -18,6 +19,11 @@ public class IfBlockView extends ContainerBlockView{
     @Override
     public String getBlockName() {
         return "If condition";
+    }
+
+    @Override
+    public Categories[] getCategories() {
+        return new Categories[]{Categories.CONTAINERS, Categories.LOGIC};
     }
 
     @Override

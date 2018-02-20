@@ -1,8 +1,9 @@
-package com.gmail.gerbencdg.dragndrop.blockviews;
+package com.gmail.gerbencdg.dragndrop.blockviews.container;
 
 import android.content.Context;
 
 import com.gmail.gerbencdg.dragndrop.R;
+import com.gmail.gerbencdg.dragndrop.blockviews.BlockView;
 
 /**
  * Created by Gerben on 11/02/2018.
