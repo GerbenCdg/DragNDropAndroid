@@ -150,10 +150,10 @@ public class MainActivity extends AppCompatActivity implements View.OnDragListen
         float dX = Math.abs(motionEvent.getX() - mFirstX);
         float dY = Math.abs(motionEvent.getY() - mFirstY);
 
-        if (lastTouchedView.getParent() instanceof RecyclerView && dX > dY
+        if (lastTouchedView.getParent() instanceof RecyclerView && (dX > dY)
                 || lastTouchedView.getParent() instanceof LinearLayout && dY > dX)
-            // let me scroll !
-            return true;
+            // let me scroll, don't call onTouch again for the current touch.
+            return false;
 
         if (view instanceof RecyclerBlockView) {
 

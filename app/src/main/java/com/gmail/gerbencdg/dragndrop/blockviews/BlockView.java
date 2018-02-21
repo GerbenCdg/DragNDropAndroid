@@ -1,6 +1,7 @@
 package com.gmail.gerbencdg.dragndrop.blockviews;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -46,7 +47,11 @@ public abstract class BlockView extends CardView implements Cloneable {
     abstract public String getBlockName();
 
     protected int dpToPx(float dp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
+        return dpToPx(dp, getResources());
+    }
+
+    public static int dpToPx(float dp, Resources res) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, res.getDisplayMetrics());
     }
 
     // allows to set margin params, and works as CardView extends from FrameLayout

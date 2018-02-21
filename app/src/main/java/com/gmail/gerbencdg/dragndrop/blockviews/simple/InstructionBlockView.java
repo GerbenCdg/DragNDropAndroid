@@ -19,16 +19,16 @@ public class InstructionBlockView extends SimpleBlockView {
     public InstructionBlockView(Context context, @DrawableRes int drawableRes) {
         super(context);
         mDrawable = ContextCompat.getDrawable(context, drawableRes);
-        setImage(mDrawable);
+        setDrawable(mDrawable);
     }
 
     public InstructionBlockView(Context context, Drawable drawable) {
         super(context);
         this.mDrawable = drawable;
-        setImage(drawable);
+        setDrawable(drawable);
     }
 
-    private void setImage(Drawable drawable) {
+    private void setDrawable(Drawable drawable) {
 
         ImageView imageView = new ImageView(getContext());
         imageView.setImageDrawable(drawable);
@@ -39,6 +39,10 @@ public class InstructionBlockView extends SimpleBlockView {
 
         invalidate();
         requestLayout();
+    }
+
+    public Drawable getDrawable() {
+        return mDrawable;
     }
 
     @Override

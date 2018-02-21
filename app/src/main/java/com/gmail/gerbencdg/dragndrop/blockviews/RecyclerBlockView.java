@@ -1,11 +1,8 @@
 package com.gmail.gerbencdg.dragndrop.blockviews;
 
 import android.content.Context;
-import android.support.annotation.Dimension;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.gmail.gerbencdg.dragndrop.blockviews.simple.SimpleBlockView;
 
@@ -16,33 +13,16 @@ import com.gmail.gerbencdg.dragndrop.blockviews.simple.SimpleBlockView;
 public class RecyclerBlockView extends SimpleBlockView {
 
     private BlockView cloneInstance;
-
-    private TextView mTextView;
     private BlockView realBv;
 
     public RecyclerBlockView(Context context) {
         super(context);
-        inflateTextView();
     }
 
     public RecyclerBlockView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        inflateTextView();
     }
 
-    private void inflateTextView() {
-        mTextView = new TextView(getContext());
-        mTextView.setTextSize(Dimension.SP, 16);
-        mTextView.setGravity(Gravity.CENTER);
-
-        int padding = dpToPx(12);
-        setPadding(padding, padding, padding, padding);
-
-        addView(mTextView);
-
-        invalidate();
-        requestLayout();
-    }
 
     public void setRealBv(BlockView rbv) {
         if (realBv != null) {
